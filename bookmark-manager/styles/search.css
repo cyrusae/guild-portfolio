@@ -1,0 +1,49 @@
+.list-controls {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Tag filters take up remaining space so search stays pinned right */
+#tag-filters {
+  flex: 1;
+}
+
+.search-input {
+  flex-shrink: 0;
+  width: 220px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: #111827;
+  background-color: #ffffff;
+  transition: border-color 0.15s, outline-color 0.15s;
+}
+
+.search-input:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 0;
+  border-color: #2563eb;
+}
+
+/* Clear button rendered by some browsers inside type=search */
+.search-input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .list-controls {
+    flex-direction: column;
+  }
+
+  #tag-filters {
+    width: 100%;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+}

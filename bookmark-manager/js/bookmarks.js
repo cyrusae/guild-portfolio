@@ -48,18 +48,32 @@ function createBookmarkElement(bookmark, { onEdit, onDelete } = {}) {
 }
 
 /**
- * Reads bookmarks from storage and re-renders the list.
- * Toggles the empty state message as needed.
- * @param {{ onEdit?: Function, onDelete?: Function }} callbacks
+ * Reads bookmarks from storage, applies tag filter then search query, and re-renders the list.
+ * Tag filter is applied first; search runs within those results (as specified).
+ * @param {{ onEdit?: Function, onDelete?: Function, activeTag?: string | null, searchQuery?: string }} options
  */
-export function renderBookmarks({ onEdit, onDelete } = {}) {
+export function renderBookmarks({ onEdit, onDelete, activeTag = null, searchQuery = '' } = {}) {
   const list = document.getElementById('bookmark-list');
   const emptyState = document.getElementById('empty-state');
-  const bookmarks = getBookmarks();
+  const allBookmarks = getBookmarks();
+  let bookmarks = allBookmarks;
+
+  if (activeTag !== null) {
+    bookmarks = bookmarks.filter((b) => b.tags?.includes(activeTag));
+  }
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    bookmarks = bookmarks.filter((b) =>
+      b.title.toLowerCase().includes(q) ||
+      (b.note && b.note.toLowerCase().includes(q))
+    );
+  }
 
   list.replaceChildren();
 
   if (bookmarks.length === 0) {
+    emptyState.textContent = emptyStateMessage(allBookmarks.length, activeTag, searchQuery);
     emptyState.classList.remove('hidden');
     return;
   }
@@ -68,4 +82,24 @@ export function renderBookmarks({ onEdit, onDelete } = {}) {
   for (const bookmark of bookmarks) {
     list.appendChild(createBookmarkElement(bookmark, { onEdit, onDelete }));
   }
+}
+
+/**
+ * Returns an appropriate empty-state message based on the current filter state.
+ * @param {number} totalCount
+ * @param {string | null} activeTag
+ * @param {string} searchQuery
+ * @returns {string}
+ */
+function emptyStateMessage(totalCount, activeTag, searchQuery) {
+  if (totalCount === 0) {
+    return 'No bookmarks yet. Add one above!';
+  }
+  if (activeTag !== null && searchQuery) {
+    return `No bookmarks tagged "${activeTag}" match "${searchQuery}".`;
+  }
+  if (searchQuery) {
+    return `No bookmarks match "${searchQuery}".`;
+  }
+  return `No bookmarks tagged "${activeTag}".`;
 }

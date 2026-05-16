@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="styles/modal.css">
   <link rel="stylesheet" href="styles/toast.css">
   <link rel="stylesheet" href="styles/tags.css">
+  <link rel="stylesheet" href="styles/search.css">
 </head>
 <body>
   <header class="app-header">
@@ -17,7 +18,10 @@
   </header>
 
   <main class="app-main">
-    <div id="tag-filters" class="tag-filters hidden"></div>
+    <div class="list-controls">
+      <div id="tag-filters" class="tag-filters hidden"></div>
+      <input type="search" id="search-input" class="search-input" placeholder="Search bookmarks…" aria-label="Search bookmarks">
+    </div>
     <div id="bookmark-list" class="bookmark-list"></div>
     <p id="empty-state" class="empty-state hidden"></p>
   </main>
