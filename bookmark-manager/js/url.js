@@ -33,6 +33,11 @@ export function validateUrl(raw) {
     return { valid: false, error: 'URL is not valid.' };
   }
 
+  // Only http and https are permitted — blocks javascript:, data:, etc.
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    return { valid: false, error: 'URL must use the http or https protocol.' };
+  }
+
   // Require at least one dot in the hostname (rules out bare labels like "localhost")
   if (!parsed.hostname || !parsed.hostname.includes('.')) {
     return { valid: false, error: 'URL must include a valid domain (e.g. example.com).' };

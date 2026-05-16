@@ -14,7 +14,10 @@ function createBookmarkElement(bookmark, { onEdit, onDelete, onTagClick } = {}) 
 
   const titleEl = node.querySelector('.bookmark-title');
   titleEl.textContent = bookmark.title;
-  titleEl.href = bookmark.url;
+  // Guard against tampered localStorage: only set href for safe protocols.
+  if (/^https?:\/\//i.test(bookmark.url)) {
+    titleEl.href = bookmark.url;
+  }
 
   const domainEl = node.querySelector('.bookmark-domain');
   try {
@@ -44,6 +47,16 @@ function createBookmarkElement(bookmark, { onEdit, onDelete, onTagClick } = {}) 
 
   node.querySelector('.edit-btn').addEventListener('click', () => onEdit?.(bookmark));
   node.querySelector('.delete-btn').addEventListener('click', () => onDelete?.(bookmark.id));
+
+  // On touch devices, tap the card to reveal actions; propagation stops so the
+  // document-level handler (which dismisses focus) doesn't fire on the same tap.
+  node.querySelector('.bookmark-item').addEventListener('click', (e) => {
+    if (!window.matchMedia('(hover: none)').matches) return;
+    e.stopPropagation();
+    document.querySelectorAll('.bookmark-item.is-focused')
+      .forEach((el) => el.classList.remove('is-focused'));
+    e.currentTarget.classList.add('is-focused');
+  });
 
   return node;
 }

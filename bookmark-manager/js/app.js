@@ -44,6 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
     refresh();
   });
 
+  // On touch devices, tapping outside any card dismisses the focused card.
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.bookmark-item.is-focused')
+      .forEach((el) => el.classList.remove('is-focused'));
+  });
+
   initModal(refresh);
   refresh();
 });

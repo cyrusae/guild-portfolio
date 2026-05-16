@@ -70,10 +70,9 @@ function handleSubmit(e) {
   }
 
   const note = noteInput.value.trim();
-  const tags = tagsInput.value
-    .split(',')
-    .map((t) => t.trim())
-    .filter(Boolean);
+  const tags = [...new Set(
+    tagsInput.value.split(',').map((t) => t.trim()).filter(Boolean)
+  )];
   const url = cleanUrl(urlResult.url);
 
   const isEditing = editingId !== null;
