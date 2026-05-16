@@ -114,6 +114,8 @@ export function renderBookmarks({ onEdit, onDelete, onTagClick, activeTags = [],
     if (noteEl && !noteEl.classList.contains('hidden') && toggleBtn) {
       if (noteEl.scrollHeight > noteEl.clientHeight) {
         toggleBtn.classList.remove('hidden');
+      } else {
+        noteEl.classList.remove('is-clamped');
       }
     }
   }
