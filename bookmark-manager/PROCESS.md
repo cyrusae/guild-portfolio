@@ -77,6 +77,21 @@ Told Claude to read the `TESTING.md` doc for desirable edge cases to handle and 
 
 Line breaks in notes stopped displaying as a result of the initial implementation of handling long notes; fixed immediately. No other issues noticed to have been introduced.
 
+#### Letting Claude summarize the result
+
+```text
+  Core + all four Additions — display, add/edit/delete, localStorage persistence, notes, tags, filtering, search, all working together with no  
+  circular imports and no innerHTML anywhere.
+                                                 
+  All three Enhancements — auto-protocol prefixing, duplicate detection with an actionable toast, and multi-tag AND filtering.                  
+   
+  A solid visual style — darkened Catppuccin Mocha, JetBrains Mono, zero border radius, teal accents, the whole terminal aesthetic.             
+                                                            
+  Plus extras along the way — sticky header, tag badges as filter shortcuts, hover-reveal edit/delete with mobile tap-focus fallback, note      
+  truncation with expand toggle, URL hostname fallback for titles, and a fairly thorough security pass (textContent throughout, explicit
+  protocol guard, render-time href check).      
+```
+
 ### What I learned
 
 Live Server is more powerful than I was aware of. Some specifics of how `is-clamped` works in CSS. What was harder than expected: adhering to the assignment structure instead of writing a design doc properly the first time was a nightmare and I hated it. Claude handled the artificially-layered design doc well, which was nice.
