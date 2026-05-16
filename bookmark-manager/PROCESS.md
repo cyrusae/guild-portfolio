@@ -21,15 +21,17 @@ Document:
 
 Single-page bookmark manager with duplicate detection, notes/tags, search, editing, and deletion. Built as the first required project for the Navigators Guild and to experiment further with cyberpunk Catppuccin themes.
 
-**Note:** I am aware I didn't exactly follow the instructions. This is because the instructions were going to drive me insane. I did my best to artificially inject the layering as opposed to including it in the design document naturally, which was difficult, but I have strong preferences about readable HTML/JS projects and I'm going to have to ask you to live with that. 
+**Note:** I am aware I didn't exactly follow the instructions. This is because the instructions were going to drive me insane. I did my best to artificially inject the layering as opposed to including it in the design document naturally, which was difficult, but I have strong preferences about readable HTML/JS projects and I'm going to have to ask you to live with that.
 
 ## Design doc and process
 
 I used Claude Haiku for brainstorming and rewrote the design doc it generated to attempt to conform to the project guidelines, including forcing the layered iterations. I did log the layer requirements in advance because I have limits. I broke my specifications into `DESIGN.md` and `TESTING.md` to separate out validation/edge case suggestions from the main document. The edge cases were suggested by Haiku.
 
-Development stage started with a fresh Claude Code instance (Sonnet, `--system-prompt="."`) in a folder with the DESIGN and TESTING documentation. 
+Development stage started with a fresh Claude Code instance (Sonnet, `--system-prompt="."`) in a folder with the DESIGN and TESTING documentation.
 
 ### Layers
+
+"What I asked the agent to do" is available verbatim in `DESIGN.md` and seems like overkill to recapitulate.
 
 #### Core
 
