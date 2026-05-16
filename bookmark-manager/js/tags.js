@@ -11,11 +11,12 @@ export function getUniqueTags() {
 
 /**
  * Renders the tag filter bar.
- * Shows an "All" button plus one button per unique tag.
+ * Supports multi-select: clicking an inactive tag adds it to the active set;
+ * clicking an active tag removes it. "All" clears the selection.
  * Hides the container entirely when no tags exist.
- * @param {{ activeTag: string | null, onSelect: (tag: string | null) => void }} options
+ * @param {{ activeTags: string[], onSelect: (tags: string[]) => void }} options
  */
-export function renderTagFilters({ activeTag, onSelect }) {
+export function renderTagFilters({ activeTags, onSelect }) {
   const container = document.getElementById('tag-filters');
   const tags = getUniqueTags();
 
@@ -29,16 +30,22 @@ export function renderTagFilters({ activeTag, onSelect }) {
   container.classList.remove('hidden');
 
   const allBtn = document.createElement('button');
-  allBtn.className = activeTag === null ? 'tag-filter-btn active' : 'tag-filter-btn';
+  allBtn.className = activeTags.length === 0 ? 'tag-filter-btn active' : 'tag-filter-btn';
   allBtn.textContent = 'All';
-  allBtn.addEventListener('click', () => onSelect(null));
+  allBtn.addEventListener('click', () => onSelect([]));
   container.appendChild(allBtn);
 
   for (const tag of tags) {
+    const isActive = activeTags.includes(tag);
     const btn = document.createElement('button');
-    btn.className = tag === activeTag ? 'tag-filter-btn active' : 'tag-filter-btn';
+    btn.className = isActive ? 'tag-filter-btn active' : 'tag-filter-btn';
     btn.textContent = tag;
-    btn.addEventListener('click', () => onSelect(tag));
+    btn.addEventListener('click', () => {
+      onSelect(isActive
+        ? activeTags.filter((t) => t !== tag)
+        : [...activeTags, tag]
+      );
+    });
     container.appendChild(btn);
   }
 }

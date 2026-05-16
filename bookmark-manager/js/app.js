@@ -1,21 +1,25 @@
 import { renderBookmarks } from './bookmarks.js';
 import { initModal, openEditModal } from './modal.js';
 import { deleteBookmark } from './storage.js';
-import { renderTagFilters } from './tags.js';
+import { renderTagFilters, getUniqueTags } from './tags.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  let activeTag = null;
+  let activeTags = [];
   let searchQuery = '';
 
   function refresh() {
+    // Drop any selected tags that no longer exist (e.g. after editing a bookmark).
+    const existingTags = getUniqueTags();
+    activeTags = activeTags.filter((t) => existingTags.includes(t));
+
     renderTagFilters({
-      activeTag,
-      onSelect: (tag) => {
-        activeTag = tag;
+      activeTags,
+      onSelect: (tags) => {
+        activeTags = tags;
         refresh();
       },
     });
-    renderBookmarks({ onEdit, onDelete, activeTag, searchQuery });
+    renderBookmarks({ onEdit, onDelete, activeTags, searchQuery });
   }
 
   function onEdit(bookmark) {

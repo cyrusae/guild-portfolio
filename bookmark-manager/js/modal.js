@@ -1,5 +1,5 @@
 import { validateUrl, cleanUrl } from './url.js';
-import { addBookmark, updateBookmark } from './storage.js';
+import { addBookmark, updateBookmark, findBookmarkByUrl } from './storage.js';
 import { showToast } from './toast.js';
 
 const overlay = document.getElementById('modal-overlay');
@@ -77,6 +77,20 @@ function handleSubmit(e) {
   const url = cleanUrl(urlResult.url);
 
   const isEditing = editingId !== null;
+
+  // Duplicate detection — only on add, not when editing an existing bookmark.
+  if (!isEditing) {
+    const existing = findBookmarkByUrl(url);
+    if (existing) {
+      const savedCallback = onSavedCallback;
+      closeModal();
+      showToast('Bookmark already exists.', 'error', {
+        label: 'Edit it',
+        onClick: () => openEditModal(existing, savedCallback),
+      });
+      return;
+    }
+  }
 
   if (isEditing) {
     updateBookmark(editingId, { url, title: rawTitle, note, tags });

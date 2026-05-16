@@ -23,13 +23,12 @@ export function validateUrl(raw) {
     return { valid: false, error: 'URL is required.' };
   }
 
-  if (!/^https?:\/\//i.test(trimmed)) {
-    return { valid: false, error: 'URL must start with http:// or https://.' };
-  }
+  // Auto-prefix https:// if no protocol is present.
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 
   let parsed;
   try {
-    parsed = new URL(trimmed);
+    parsed = new URL(withProtocol);
   } catch {
     return { valid: false, error: 'URL is not valid.' };
   }
@@ -39,7 +38,7 @@ export function validateUrl(raw) {
     return { valid: false, error: 'URL must include a valid domain (e.g. example.com).' };
   }
 
-  return { valid: true, url: trimmed };
+  return { valid: true, url: withProtocol };
 }
 
 /**

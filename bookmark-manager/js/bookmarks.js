@@ -48,18 +48,18 @@ function createBookmarkElement(bookmark, { onEdit, onDelete } = {}) {
 }
 
 /**
- * Reads bookmarks from storage, applies tag filter then search query, and re-renders the list.
- * Tag filter is applied first; search runs within those results (as specified).
- * @param {{ onEdit?: Function, onDelete?: Function, activeTag?: string | null, searchQuery?: string }} options
+ * Reads bookmarks from storage, applies tag filters (AND) then search query, and re-renders.
+ * Tag filters are applied first; search runs within those results.
+ * @param {{ onEdit?: Function, onDelete?: Function, activeTags?: string[], searchQuery?: string }} options
  */
-export function renderBookmarks({ onEdit, onDelete, activeTag = null, searchQuery = '' } = {}) {
+export function renderBookmarks({ onEdit, onDelete, activeTags = [], searchQuery = '' } = {}) {
   const list = document.getElementById('bookmark-list');
   const emptyState = document.getElementById('empty-state');
   const allBookmarks = getBookmarks();
   let bookmarks = allBookmarks;
 
-  if (activeTag !== null) {
-    bookmarks = bookmarks.filter((b) => b.tags?.includes(activeTag));
+  if (activeTags.length > 0) {
+    bookmarks = bookmarks.filter((b) => activeTags.every((tag) => b.tags?.includes(tag)));
   }
 
   if (searchQuery) {
@@ -73,7 +73,7 @@ export function renderBookmarks({ onEdit, onDelete, activeTag = null, searchQuer
   list.replaceChildren();
 
   if (bookmarks.length === 0) {
-    emptyState.textContent = emptyStateMessage(allBookmarks.length, activeTag, searchQuery);
+    emptyState.textContent = emptyStateMessage(allBookmarks.length, activeTags, searchQuery);
     emptyState.classList.remove('hidden');
     return;
   }
@@ -87,19 +87,20 @@ export function renderBookmarks({ onEdit, onDelete, activeTag = null, searchQuer
 /**
  * Returns an appropriate empty-state message based on the current filter state.
  * @param {number} totalCount
- * @param {string | null} activeTag
+ * @param {string[]} activeTags
  * @param {string} searchQuery
  * @returns {string}
  */
-function emptyStateMessage(totalCount, activeTag, searchQuery) {
+function emptyStateMessage(totalCount, activeTags, searchQuery) {
   if (totalCount === 0) {
     return 'No bookmarks yet. Add one above!';
   }
-  if (activeTag !== null && searchQuery) {
-    return `No bookmarks tagged "${activeTag}" match "${searchQuery}".`;
+  const tagList = activeTags.map((t) => `"${t}"`).join(' + ');
+  if (activeTags.length > 0 && searchQuery) {
+    return `No bookmarks tagged ${tagList} match "${searchQuery}".`;
   }
   if (searchQuery) {
     return `No bookmarks match "${searchQuery}".`;
   }
-  return `No bookmarks tagged "${activeTag}".`;
+  return `No bookmarks tagged ${tagList}.`;
 }

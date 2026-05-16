@@ -50,3 +50,12 @@ export function updateBookmark(id, changes) {
 export function deleteBookmark(id) {
   saveBookmarks(getBookmarks().filter((b) => b.id !== id));
 }
+
+/**
+ * Returns the first bookmark whose stored URL matches the given URL, or null.
+ * @param {string} url
+ * @returns {object | null}
+ */
+export function findBookmarkByUrl(url) {
+  return getBookmarks().find((b) => b.url === url) ?? null;
+}
