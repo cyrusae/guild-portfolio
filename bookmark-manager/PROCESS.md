@@ -77,7 +77,7 @@ Line breaks in notes stopped displaying as a result of the initial implementatio
 
 ### What I learned
 
-Live Server is more powerful than I was aware of. Some specifics of how `is-clamped` works in CSS.
+Live Server is more powerful than I was aware of. Some specifics of how `is-clamped` works in CSS. What was harder than expected: adhering to the assignment structure instead of writing a design doc properly was a nightmare and I hated it.
 
 ### Known issues
 
