@@ -75,6 +75,10 @@ Told Claude to read the `TESTING.md` doc for desirable edge cases to handle and 
 
 Line breaks in notes stopped displaying as a result of the initial implementation of handling long notes; fixed immediately. No other issues noticed to have been introduced.
 
+### What I learned
+
+Live Server is more powerful than I was aware of. Some specifics of how `is-clamped` works in CSS.
+
 ### Known issues
 
 I don't know how to resist the urge to say "It's obviously unusable." It is. It's an unusable toy, that's what the requirement specified. If I wanted to actually bookmark things I'd use raindrop.io or Semble. If I wanted to build a bookmark manager I would actually use that wasn't reinventing the wheel I'd be... actually, no, I'd just be reinventing Semble, I don't have any meaningful additions to their graph model.
