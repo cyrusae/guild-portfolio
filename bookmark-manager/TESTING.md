@@ -58,7 +58,7 @@
 
 ### Sanitization / Security
 
-- [ ]  Inject `<img src=x onerror="alert('XSS')">` in title (should be escaped, not executed)
+- [ ] Inject `<img src=x onerror="alert('XSS')">` in title (should be escaped, not executed)
 - [ ] Inject `<script>alert('XSS')</script>` in notes (should be escaped)
 - [ ] Inject `javascript:alert('XSS')` as URL (reject)
 
