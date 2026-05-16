@@ -67,6 +67,32 @@
   padding-left: 0.6rem;
 }
 
+/* ── Note toggle ─────────────────────────────────────────────────────────── */
+.bookmark-note.is-clamped {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.note-toggle {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--teal);
+  font-family: inherit;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 0.2rem;
+}
+
+.note-toggle::before { content: '[ '; color: var(--overlay0); }
+.note-toggle::after  { content: ' ]'; color: var(--overlay0); }
+
 /* ── Tags ────────────────────────────────────────────────────────────────── */
 .bookmark-tags {
   display: flex;

@@ -60,11 +60,6 @@ function handleSubmit(e) {
     hasError = true;
   }
 
-  if (!rawTitle) {
-    showFieldError(titleInput, titleError, 'Title is required.');
-    hasError = true;
-  }
-
   if (hasError) {
     return;
   }
@@ -74,6 +69,8 @@ function handleSubmit(e) {
     tagsInput.value.split(',').map((t) => t.trim()).filter(Boolean)
   )];
   const url = cleanUrl(urlResult.url);
+  // Fall back to hostname when title is left blank.
+  const title = rawTitle || new URL(url).hostname;
 
   const isEditing = editingId !== null;
 
@@ -92,12 +89,12 @@ function handleSubmit(e) {
   }
 
   if (isEditing) {
-    updateBookmark(editingId, { url, title: rawTitle, note, tags });
+    updateBookmark(editingId, { url, title, note, tags });
   } else {
     addBookmark({
       id: crypto.randomUUID(),
       url,
-      title: rawTitle,
+      title,
       note,
       tags,
       createdAt: new Date().toISOString(),

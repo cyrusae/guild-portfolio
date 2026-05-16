@@ -14,7 +14,7 @@
 
 ### Edge Cases: Title
 
-- [ ]  Empty title (allow; use URL as fallback display)
+- [x]  Empty title (allow; use URL as fallback display)
 - [x]  Very long title (truncate or wrap gracefully)
 - [x]  Title with HTML-like tags (e.g., `<script>`)--sanitize/escape
 
@@ -23,7 +23,7 @@
 - [x]  No notes (optional; should work)
 - [x]  Notes with newlines (preserve)
 - [x]  Notes with HTML (sanitize)
-- [ ]  Very long notes (display truncated, show "..." + expand on hover/click)
+- [x]  Very long notes (display truncated, show "..." + expand on hover/click)
 
 ### Edge Cases: Tags
 

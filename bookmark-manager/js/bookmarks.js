@@ -31,6 +31,15 @@ function createBookmarkElement(bookmark, { onEdit, onDelete, onTagClick } = {}) 
     const noteEl = node.querySelector('.bookmark-note');
     noteEl.textContent = bookmark.note;
     noteEl.classList.remove('hidden');
+    noteEl.classList.add('is-clamped');
+
+    const toggleBtn = node.querySelector('.note-toggle');
+    toggleBtn.addEventListener('click', () => {
+      const expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+      noteEl.classList.toggle('is-clamped', expanded);
+      toggleBtn.setAttribute('aria-expanded', String(!expanded));
+      toggleBtn.textContent = expanded ? 'Show more' : 'Show less';
+    });
   }
 
   if (bookmark.tags && bookmark.tags.length > 0) {
@@ -95,6 +104,18 @@ export function renderBookmarks({ onEdit, onDelete, onTagClick, activeTags = [],
   emptyState.classList.add('hidden');
   for (const bookmark of bookmarks) {
     list.appendChild(createBookmarkElement(bookmark, { onEdit, onDelete, onTagClick }));
+  }
+
+  // Reveal the toggle button only for notes that actually overflow the clamp.
+  // Accessing scrollHeight forces a synchronous reflow so the comparison is accurate.
+  for (const item of list.querySelectorAll('.bookmark-item')) {
+    const noteEl = item.querySelector('.bookmark-note');
+    const toggleBtn = item.querySelector('.note-toggle');
+    if (noteEl && !noteEl.classList.contains('hidden') && toggleBtn) {
+      if (noteEl.scrollHeight > noteEl.clientHeight) {
+        toggleBtn.classList.remove('hidden');
+      }
+    }
   }
 }
 
