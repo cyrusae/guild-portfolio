@@ -19,11 +19,18 @@ document.addEventListener('DOMContentLoaded', () => {
         refresh();
       },
     });
-    renderBookmarks({ onEdit, onDelete, activeTags, searchQuery });
+    renderBookmarks({ onEdit, onDelete, onTagClick, activeTags, searchQuery });
   }
 
   function onEdit(bookmark) {
     openEditModal(bookmark, refresh);
+  }
+
+  function onTagClick(tag) {
+    if (!activeTags.includes(tag)) {
+      activeTags = [...activeTags, tag];
+      refresh();
+    }
   }
 
   function onDelete(id) {

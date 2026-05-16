@@ -6,10 +6,10 @@ const template = document.getElementById('bookmark-item-template');
  * Builds a single bookmark card DOM node from the template.
  * Uses textContent / setAttribute exclusively — no raw HTML interpolation.
  * @param {{ id: string, url: string, title: string, note?: string, tags?: string[] }} bookmark
- * @param {{ onEdit?: Function, onDelete?: Function }} callbacks
+ * @param {{ onEdit?: Function, onDelete?: Function, onTagClick?: Function }} callbacks
  * @returns {DocumentFragment}
  */
-function createBookmarkElement(bookmark, { onEdit, onDelete } = {}) {
+function createBookmarkElement(bookmark, { onEdit, onDelete, onTagClick } = {}) {
   const node = template.content.cloneNode(true);
 
   const titleEl = node.querySelector('.bookmark-title');
@@ -34,9 +34,10 @@ function createBookmarkElement(bookmark, { onEdit, onDelete } = {}) {
     const tagsEl = node.querySelector('.bookmark-tags');
     tagsEl.classList.remove('hidden');
     for (const tag of bookmark.tags) {
-      const badge = document.createElement('span');
+      const badge = document.createElement('button');
       badge.className = 'tag-badge';
       badge.textContent = tag;
+      badge.addEventListener('click', () => onTagClick?.(tag));
       tagsEl.appendChild(badge);
     }
   }
@@ -52,7 +53,7 @@ function createBookmarkElement(bookmark, { onEdit, onDelete } = {}) {
  * Tag filters are applied first; search runs within those results.
  * @param {{ onEdit?: Function, onDelete?: Function, activeTags?: string[], searchQuery?: string }} options
  */
-export function renderBookmarks({ onEdit, onDelete, activeTags = [], searchQuery = '' } = {}) {
+export function renderBookmarks({ onEdit, onDelete, onTagClick, activeTags = [], searchQuery = '' } = {}) {
   const list = document.getElementById('bookmark-list');
   const emptyState = document.getElementById('empty-state');
   const allBookmarks = getBookmarks();
@@ -80,7 +81,7 @@ export function renderBookmarks({ onEdit, onDelete, activeTags = [], searchQuery
 
   emptyState.classList.add('hidden');
   for (const bookmark of bookmarks) {
-    list.appendChild(createBookmarkElement(bookmark, { onEdit, onDelete }));
+    list.appendChild(createBookmarkElement(bookmark, { onEdit, onDelete, onTagClick }));
   }
 }
 

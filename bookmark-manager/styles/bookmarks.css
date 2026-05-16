@@ -1,7 +1,7 @@
 .bookmark-list {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.6rem;
 }
 
 /* ── Card ────────────────────────────────────────────────────────────────── */
@@ -9,7 +9,7 @@
   background-color: var(--surface0);
   border: 1px solid var(--surface2);
   border-left: 3px solid var(--teal);
-  padding: 0.8rem 1rem;
+  padding: 1rem 1.1rem;
   transition: border-color 0.1s, box-shadow 0.1s;
 }
 
@@ -49,14 +49,16 @@
 }
 
 .bookmark-domain {
-  font-size: 0.72rem;
+  font-size: 0.61rem;
   color: var(--overlay0);
   word-break: break-all;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* ── Note ────────────────────────────────────────────────────────────────── */
 .bookmark-note {
-  font-size: 0.78rem;
+  font-size: 0.70rem;
   color: var(--subtext0);
   margin-top: 0.45rem;
   line-height: 1.65;
@@ -82,8 +84,17 @@
   padding: 0.1rem 0.45rem;
   font-size: 0.68rem;
   font-weight: 500;
-  letter-spacing: 0.06em;
+  font-family: inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.1s, color 0.1s;
+}
+
+.tag-badge:hover {
+  background-color: var(--mauve);
+  color: var(--crust);
 }
 
 /* ── Edit / delete icon buttons ──────────────────────────────────────────── */
