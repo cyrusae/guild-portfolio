@@ -1,8 +1,11 @@
 # Toy bookmark manager
 
 **Language:** Vanilla JS/HTML/CSS.
+
 **Output:** Single-page browser app.
+
 **Target:** Desktop and mobile browsers (should handle mobile screen size gracefully).
+
 **Goal:** Single-user bookmark manager using browser storage; iteratively add features (tags, notes, filtering, duplicate detection, editing/deleting, search).
 
 We will work through this document in order: Core -> Additional features (one by one!) -> Enhancements -> Style. Divide tasks into small chunks and pause frequently, don't try to rush through things within a single turn's token limit. Stop and verify whenever you finish a step. When in doubt, talk to me.
@@ -36,8 +39,10 @@ We will work through these one by one, in order.
 
 ### Visual style
 
-**Color scheme:** Catppuccin Mocha 
+**Color scheme:** Catppuccin Mocha
+
 **Aesthetic:** Cyberpunk terminal--blocky squared-off borders, "hacker" aesthetic, monospace Nerd Font
+
 **Screen sizes:** Desktop and mobile support
 
 ### Testing
@@ -51,15 +56,18 @@ Starting point: `index.html`. However: **Code belongs in language-specific files
 ### Specific rules
 
 - **Never use `<style>` blocks in `.js` files**
-    - Extract all styles to corresponding `.css` files
-    - WRONG: `script.js` with `<style>` tag
-    - RIGHT: `component.js`, `component.css`, import in component.js
+  - Extract all styles to corresponding `.css` files
+  - WRONG: `script.js` with `<style>` tag
+  - RIGHT: `component.js`, `component.css`, import in component.js
+
 - **Never use inline `style` attributes for component styling**
-    - WRONG: `<div style="color: red; padding: 10px;">text</div>`
-    - RIGHT: Add class, define in `.css` file
+  - WRONG: `<div style="color: red; padding: 10px;">text</div>`
+  - RIGHT: Add class, define in `.css` file
+
 - **Import at the top of `.js` files** (no lazy-loading)
-    - Explicit imports act as self-documentation
-    - Readers know immediately what a module depends on
+  - Explicit imports act as self-documentation
+  - Readers know immediately what a module depends on
+
 - **Template strings in `.js`: Single source line only**
-	- WRONG: Multi-line template string in `.js`
-	- RIGHT: Multi-line markup → separate `.html` file and import
+ 	- WRONG: Multi-line template string in `.js`
+ 	- RIGHT: Multi-line markup → separate `.html` file and import
