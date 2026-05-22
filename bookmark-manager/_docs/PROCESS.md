@@ -21,7 +21,7 @@ Document:
 
 Single-page bookmark manager with duplicate detection, notes/tags, search, editing, and deletion. Built as the first required project for the Navigators Guild and to experiment further with cyberpunk Catppuccin themes.
 
-**Note:** I am aware I didn't exactly follow the instructions. This is because the instructions were going to drive me insane. I did my best to artificially inject the layering as opposed to including it in the design document naturally, which was difficult, but I have strong preferences about readable HTML/JS projects and I'm going to have to ask you to live with that.
+**Note:** I am aware I didn't exactly follow the instructions. This is because the instructions were going to drive me insane. I did my best to artificially inject the layering as opposed to including it in the design document naturally, which was difficult, but I have strong preferences about readable HTML/JS projects (namely, "every line of code should live in a file defined enough that the IDE knows how to highlight it"), Claude knows it, and I'm going to have to ask you to live with that.
 
 ## Design doc and process
 
@@ -31,9 +31,11 @@ Development stage started with a fresh Claude Code instance (Sonnet, `--system-p
 
 ### Layers
 
-"What I asked the agent to do" is available verbatim in `DESIGN.md` and seems like overkill to recapitulate.
+"What I asked the agent to do" is available verbatim in `DESIGN.md`.
 
-#### Core
+#### Core stage
+
+> **Requested:** Core features as defined in the spec (bookmarks displayed, can be added, persist); initial enhancements (URLs validated and trimmed, basic sanitization, confirmation toast when a bookmark is added successfully).
 
 Approved of the base architecture Claude proposed based on my style guidelines. Implemented adding and displaying bookmarks (title + url only) with basic sanity-checking (no empty titles, no empty URLs, URLs must start `http` or `https`).
 
@@ -41,25 +43,35 @@ Noticed that the URL trimming for trackers etc. wasn't how I would have implemen
 
 #### Addition #1
 
-Added optional note and tags fields to the bookmark form. Verified that saving bookmarks without tags and/or notes was still functional. Verified that `tag, ` correctly cut off to just `tag`.
+> **Requested:** Added optional note and tags fields to the bookmark form. 
 
-Notes didn't immediately support newlines/multi-paragraph notes due to needing a CSS fix. Claude was responsive when I noted this. Fix worked immediately (didn't even require reloading the page).
+Verified that saving bookmarks without tags and/or notes was still functional. Verified that `tag, ` correctly cut off to just `tag`.
+
+Notes didn't immediately support newlines/multi-paragraph notes due to needing a CSS fix. Claude was responsive when I noted this. Fix worked immediately (didn't even require reloading the page, that was nice).
 
 #### Addition #2
+
+> **Requested:** Edit and delete functions, with icons.
 
 Edit and delete functions worked as intended (editing saves correctly, delete has a sanity check, icons are unobtrusive).
 
 #### Addition #3
 
-Adding tags bar worked as intended. Noted for future reference that it was going to get unwieldy with more than like five tags but that's out of scope for the project as written. Confirmed that tag filtering worked.
+> **Requested:** All existing tags are displayed above the bookmark list; clicking a bookmark filters it.
+
+Adding tags bar worked as intended. Noted for future reference that it was going to get unwieldy with more than like five tags but that's out of scope for the project as written. Confirmed that tag filtering worked. Decided that clicking tags should be an `AND` sort as opposed to `OR` but didn't implement it yet.
 
 #### Addition #4
+
+> **Requested:** Search bar next to tag filters.
 
 Search bar implemented. Confirmed that it searches notes and titles but not tags (intended behavior) and that it searches within a tag when the tag is selected.
 
 Noted that scrolling took the header off the top of the page. Asked for header to stick to the top of the page and contents to scroll under it. Stickied header accordingly. Debating whether to do the same to tags/search or if that would be too clunky; deferring this to after adding visual styling.
 
 #### Enhancements
+
+> **Requests:** Duplicate detection on bookmarks; added automatic URL prefixing and filling in URLs in the absence of a title; multi-tag select.
 
 Verified that multi-tag select worked (I asked for AND select). Added duplicate detection and support for URLs missing their prefix.
 
@@ -80,16 +92,13 @@ Line breaks in notes stopped displaying as a result of the initial implementatio
 #### Letting Claude summarize the result
 
 ```text
-  Core + all four Additions — display, add/edit/delete, localStorage persistence, notes, tags, filtering, search, all working together with no  
-  circular imports and no innerHTML anywhere.
+  Core + all four Additions — display, add/edit/delete, localStorage persistence, notes, tags, filtering, search, all working together with no circular imports and no innerHTML anywhere.
                                                  
   All three Enhancements — auto-protocol prefixing, duplicate detection with an actionable toast, and multi-tag AND filtering.                  
    
   A solid visual style — darkened Catppuccin Mocha, JetBrains Mono, zero border radius, teal accents, the whole terminal aesthetic.             
                                                             
-  Plus extras along the way — sticky header, tag badges as filter shortcuts, hover-reveal edit/delete with mobile tap-focus fallback, note      
-  truncation with expand toggle, URL hostname fallback for titles, and a fairly thorough security pass (textContent throughout, explicit
-  protocol guard, render-time href check).      
+  Plus extras along the way — sticky header, tag badges as filter shortcuts, hover-reveal edit/delete with mobile tap-focus fallback, note truncation with expand toggle, URL hostname fallback for titles, and a fairly thorough security pass (textContent throughout, explicit protocol guard, render-time href check).      
 ```
 
 ### What I learned
