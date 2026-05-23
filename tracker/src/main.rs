@@ -18,6 +18,24 @@ fn main() {
     }
 }
 
+/// Returns (known_ids, done_ids) for status derivation.
+/// known_ids = all IDs in the tracker; done_ids = subset that are closed.
+fn known_and_done(
+    tracker: &data::TrackerFile,
+) -> (
+    std::collections::HashSet<u32>,
+    std::collections::HashSet<u32>,
+) {
+    let known_ids = tracker.issues.iter().map(|i| i.id).collect();
+    let done_ids = tracker
+        .issues
+        .iter()
+        .filter(|i| matches!(i.timeline.last().map(|e| &e.event), Some(EventKind::Closed)))
+        .map(|i| i.id)
+        .collect();
+    (known_ids, done_ids)
+}
+
 fn parse_priority(s: &str) -> Result<Priority, String> {
     match s {
         "low" => Ok(Priority::Low),
@@ -69,23 +87,25 @@ fn run(cli: Cli) -> Result<(), String> {
         Commands::List { status, priority, label } => {
             let tracker = store::load(TRACKER_FILE)?;
 
-            // Build the set of done IDs so we can derive blocked status.
-            let done_ids: std::collections::HashSet<u32> = tracker
-                .issues
-                .iter()
-                .filter(|i| {
-                    matches!(i.timeline.last().map(|e| &e.event), Some(EventKind::Closed))
-                })
-                .map(|i| i.id)
+            // Normalise filter inputs
+            let filter_labels: Vec<String> = label.iter()
+                .map(|l| l.trim().to_lowercase())
+                .filter(|l| !l.is_empty())
                 .collect();
+
+            let (known_ids, done_ids) = known_and_done(&tracker);
 
             let mut issues: Vec<_> = tracker
                 .issues
                 .iter()
                 .filter(|i| {
-                    let s = i.status(&done_ids);
+                    let s = i.status(&known_ids, &done_ids);
                     // Default: show everything not done
                     s != data::Status::Done
+                })
+                .filter(|i| {
+                    // AND semantics: issue must have every requested label
+                    filter_labels.iter().all(|l| i.labels.contains(l))
                 })
                 .collect();
 
@@ -95,30 +115,25 @@ fn run(cli: Cli) -> Result<(), String> {
             });
 
             if issues.is_empty() {
-                println!("No open issues.");
+                println!("No matching issues.");
             } else {
                 for issue in issues {
-                    let s = issue.status(&done_ids);
+                    let s = issue.status(&known_ids, &done_ids);
                     println!("#{:<4} [{:<11}] [{}] {}",
                         issue.id, s.to_string(), issue.priority, issue.title);
                 }
             }
-            // Suppress unused-variable warnings for filters (not wired yet)
-            let _ = (status, priority, label);
+            // status and priority filters come in Phase 8
+            let _ = (status, priority);
         }
         Commands::Show { id } => {
             let tracker = store::load(TRACKER_FILE)?;
-            let done_ids: std::collections::HashSet<u32> = tracker
-                .issues
-                .iter()
-                .filter(|i| matches!(i.timeline.last().map(|e| &e.event), Some(EventKind::Closed)))
-                .map(|i| i.id)
-                .collect();
+            let (known_ids, done_ids) = known_and_done(&tracker);
 
             let issue = tracker.issues.iter().find(|i| i.id == id)
                 .ok_or_else(|| format!("issue #{id} not found"))?;
 
-            let status = issue.status(&done_ids);
+            let status = issue.status(&known_ids, &done_ids);
             println!("#{} — {}", issue.id, issue.title);
             println!("  Status:   {status}");
             println!("  Priority: {}", issue.priority);
@@ -148,12 +163,7 @@ fn run(cli: Cli) -> Result<(), String> {
         }
         Commands::Status { id, new_status } => {
             let mut tracker = store::load(TRACKER_FILE)?;
-            let done_ids: std::collections::HashSet<u32> = tracker
-                .issues
-                .iter()
-                .filter(|i| matches!(i.timeline.last().map(|e| &e.event), Some(EventKind::Closed)))
-                .map(|i| i.id)
-                .collect();
+            let (known_ids, done_ids) = known_and_done(&tracker);
 
             let event_kind = match new_status.as_str() {
                 "open"        => EventKind::Opened,
@@ -173,7 +183,7 @@ fn run(cli: Cli) -> Result<(), String> {
             }
 
             // Check blocked status before allowing in-progress/done
-            let current_status = issue.status(&done_ids);
+            let current_status = issue.status(&known_ids, &done_ids);
             if current_status == data::Status::Blocked
                 && matches!(event_kind, EventKind::Closed | EventKind::InProgress)
             {
@@ -197,10 +207,38 @@ fn run(cli: Cli) -> Result<(), String> {
             println!("unstuck: not yet implemented (id={id}, resolution={resolution:?})");
         }
         Commands::BlockedBy { id, other_id } => {
-            println!("blocked-by: not yet implemented (id={id}, other_id={other_id})");
+            if id == other_id {
+                return Err(format!("issue #{id} cannot be blocked by itself"));
+            }
+            let mut tracker = store::load(TRACKER_FILE)?;
+
+            // Verify both issues exist before mutating anything.
+            if !tracker.issues.iter().any(|i| i.id == other_id) {
+                return Err(format!("issue #{other_id} not found"));
+            }
+            let issue = tracker.issues.iter_mut().find(|i| i.id == id)
+                .ok_or_else(|| format!("issue #{id} not found"))?;
+
+            if issue.blocked_by.contains(&other_id) {
+                println!("Issue #{id} is already blocked by #{other_id}.");
+            } else {
+                issue.blocked_by.push(other_id);
+                store::save(TRACKER_FILE, &tracker)?;
+                println!("Issue #{id} is now blocked by #{other_id}.");
+            }
         }
+
         Commands::Unblock { id, other_id } => {
-            println!("unblock: not yet implemented (id={id}, other_id={other_id})");
+            let mut tracker = store::load(TRACKER_FILE)?;
+            let issue = tracker.issues.iter_mut().find(|i| i.id == id)
+                .ok_or_else(|| format!("issue #{id} not found"))?;
+
+            if !issue.blocked_by.contains(&other_id) {
+                return Err(format!("issue #{id} is not blocked by #{other_id}"));
+            }
+            issue.blocked_by.retain(|&dep| dep != other_id);
+            store::save(TRACKER_FILE, &tracker)?;
+            println!("Removed dependency: #{id} is no longer blocked by #{other_id}.");
         }
         Commands::Label { id, tags } => {
             let mut tracker = store::load(TRACKER_FILE)?;

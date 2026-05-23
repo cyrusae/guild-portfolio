@@ -121,13 +121,20 @@ impl std::fmt::Display for Status {
 
 impl Issue {
     /// Derive status from blockedBy relationships and the timeline.
-    /// `done_ids` is the set of issue IDs that are currently done.
-    pub fn status(&self, done_ids: &std::collections::HashSet<u32>) -> Status {
-        // blockedBy takes precedence: if any dependency isn't done, we're blocked.
+    /// `known_ids` is the full set of existing issue IDs.
+    /// `done_ids` is the subset of those that are closed.
+    /// Orphaned blockedBy entries (not in `known_ids`) are ignored for status.
+    pub fn status(
+        &self,
+        known_ids: &std::collections::HashSet<u32>,
+        done_ids: &std::collections::HashSet<u32>,
+    ) -> Status {
+        // blockedBy takes precedence: blocked if any *known* dependency isn't done.
+        // Unknown IDs are treated as resolved (orphan — warn on load, ignore here).
         if self
             .blocked_by
             .iter()
-            .any(|dep_id| !done_ids.contains(dep_id))
+            .any(|dep_id| known_ids.contains(dep_id) && !done_ids.contains(dep_id))
         {
             return Status::Blocked;
         }

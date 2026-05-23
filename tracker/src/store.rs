@@ -23,8 +23,24 @@ pub fn load(path: &str) -> Result<TrackerFile, String> {
         return Err(format!("{path} exists but is empty"));
     }
 
-    serde_json::from_str(&contents)
-        .map_err(|e| format!("error parsing {path}: {e}"))
+    let tracker: TrackerFile = serde_json::from_str(&contents)
+        .map_err(|e| format!("error parsing {path}: {e}"))?;
+
+    // Step 6.4: warn on orphaned blockedBy references (non-fatal).
+    let known_ids: std::collections::HashSet<u32> =
+        tracker.issues.iter().map(|i| i.id).collect();
+    for issue in &tracker.issues {
+        for dep_id in &issue.blocked_by {
+            if !known_ids.contains(dep_id) {
+                eprintln!(
+                    "warn: issue #{} references blockedBy [{}] which does not exist — relationship ignored",
+                    issue.id, dep_id
+                );
+            }
+        }
+    }
+
+    Ok(tracker)
 }
 
 /// Save a TrackerFile to the given path as pretty-printed JSON.

@@ -52,7 +52,20 @@ Claude updated DESIGN.md accordingly. Had it create PLAN.md with individual step
 
 Single pass: data model, CLI skeleton, core creation/deletion of events, status command, show command, delete command. Started working on priority. Creating with label works, filtering next.
 
-#### Layer
+#### Layer 1
+
+Added label command features: lowercase labels with deduplication, final labels sort alphabetically.
+
+#### Layer 2
+
+Added label search (AND). Suggested going in larger steps because I had suggested small steps initially and Claude was Claude-typical willing to give me what I asked for.
+
+#### Layer 3
+
+Added "blocking" between issues. Claude noticed that ignoring blocks from nonexistent issues wasn't working exactly as described and fixed it (blocked status was still being added despite the spec saying it shouldn't be).
+
+#### Layer 4
+
 
 ## What I learned
 
