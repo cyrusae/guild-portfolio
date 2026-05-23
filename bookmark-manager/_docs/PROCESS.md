@@ -142,3 +142,7 @@ Then,
 An actual fix would have probably focused on the security findings first and would have merited continuous testing to make sure that no functionality was broken.
 
 Stopping after this was honestly kind of difficult but I wanted to redirect myself to the next project as opposed to working through the entire feedback document. The process of doing so would have been straightforward and is left as an exercise for the reader.
+
+Last request:
+
+> Could you add an explanatory tree to `README.md` so the structure of the project is clear at a glance? Append to the existing content.
