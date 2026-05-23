@@ -140,3 +140,5 @@ Then,
 > Great! Can we hit #2.2 while we're here?
 
 An actual fix would have probably focused on the security findings first and would have merited continuous testing to make sure that no functionality was broken.
+
+Stopping after this was honestly kind of difficult but I wanted to redirect myself to the next project as opposed to working through the entire feedback document. The process of doing so would have been straightforward and is left as an exercise for the reader.
