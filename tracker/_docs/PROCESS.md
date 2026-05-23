@@ -38,14 +38,25 @@ On-desktop development switched to Claude Sonnet in Claude Code. If I did furthe
 
 #### Pre-flight
 
+Started with a clean Claude Code prompt and had it read the existing documents. Instructed it to read through the existing documents for context and suggest questions/changes pre-flight. It highlighted the following: `blockedBy` field versus `blocked` timeline event; question of whether issues should be reopen-able or not; AND versus OR tag filtering.
+
+Decided:
+
+1. Separate `blockedBy` and `stuck` states: blocked is a thing that happens from issues in relation to each other, stuck is a status within an issue. Refactoring documentation accordingly.
+2. Made issues permanently close; if an issue comes up again it gets to be a new issue (ticky box dopamine).
+3. AND tag filtering.
+
+Claude updated DESIGN.md accordingly. Had it create PLAN.md with individual steps based on design doc.
+
 #### Core features
 
 #### Layer
 
 ## What I learned
 
+This was my first experience working in Rust. 
+
 ## Known issues
 
-- The difference between a blocker and another issue isn't particularly clear and they're not intrinsically linked. This raises the possibility of duplicate issues in both "individual crosslinked issue" and "anontation on issue" formats.
 - I framed it as a sibling project to `pbjson` but it hasn't been deliberately designed to work in concert with it; if I were developing it as more than a one-day assignment I'd probably be trying to make them actively cross-compatible/more explicitly modeling it on `pbjson`, but in that case it would probably also be in the "bootleg skill" Python format.
 - Individual commands aren't documented, availability of `help` is limited.

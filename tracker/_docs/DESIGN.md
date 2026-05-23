@@ -33,12 +33,12 @@ Single JSON file (`tracker.json` or similar) in project directory with flat stru
         },
         {
           "timestamp": "2024-05-21T11:00:00Z",
-          "event": "blocked",
+          "event": "stuck",
           "note": "Unsure which color library to use"
         },
         {
           "timestamp": "2024-05-21T14:00:00Z",
-          "event": "unblocked",
+          "event": "unstuck",
           "note": "crossterm is standard for TUI work in Rust"
         },
         {
@@ -56,18 +56,28 @@ Single JSON file (`tracker.json` or similar) in project directory with flat stru
 - **id**: Unique identifier (integer or UUID, auto-incremented)
 - **title**: Atomic unit of work. "Colored output" not "Make the CLI better"
 - **priority**: `low`, `medium`, or `high`
-- **labels**: Array of tags for categorization (e.g., `["bug", "feature", "cli"]`)
-- **blockedBy**: Array of issue IDs this issue is blocked by
-- **timeline**: Immutable log of state transitions with optional context notes
+- **labels**: Array of tags for categorization (e.g., `["bug", "feature", "cli"]`). Stored lowercase; duplicates silently deduplicated on write.
+- **blockedBy**: Array of issue IDs this issue depends on. An issue is `blocked` if any referenced issue is not `done`.
+- **timeline**: Immutable append-only log of state transitions with optional context notes.
 
 ### Status Model
 
-Status is derived from the timeline (current event is the last one):
+Status is derived from two sources, with `blockedBy` taking precedence:
 
-- `opened`: Most recent event is `opened`
-- `in-progress`: Most recent event is `in-progress`
-- `blocked`: Most recent event is `blocked`
-- `done`: Most recent event is `closed`
+1. If any issue in `blockedBy` is not `done` → status is `blocked`
+2. Otherwise, status comes from the most recent timeline event:
+   - `opened` → `open`
+   - `in-progress` → `in-progress`
+   - `stuck` → `stuck`
+   - `unstuck` → falls back to previous non-stuck/non-unstuck state (effectively `in-progress` or `open`)
+   - `closed` → `done`
+
+**State machine rules:**
+- `done` is terminal. No transitions out of `done` are allowed.
+- You cannot add a `stuck` event to an issue that is already `stuck` (rejected with an error).
+- `stuck`/`unstuck` are internal narrative events; `blocked` status is derived from `blockedBy` relationships only.
+
+**Orphan handling:** On load, if a `blockedBy` entry references an issue ID that does not exist, a warning is emitted (`warn: issue <id> references blockedBy [<missing-id>] which does not exist — relationship ignored`) and the reference is ignored for status purposes. The file is not modified.
 
 ## CLI Interface
 
@@ -75,24 +85,32 @@ Status is derived from the timeline (current event is the last one):
 tracker create "title" [--priority low|medium|high] [--label tag] [--label tag...]
   Create a new issue
 
-tracker list [--priority P] [--label L] [--status open|in-progress|blocked|done]
+tracker list [--priority P] [--label L] [--status open|in-progress|stuck|blocked|done]
   List issues, sorted by priority (high → low)
-  Default: show open + in-progress, grouped by status
+  Default: show open + in-progress + stuck + blocked, grouped by status
+  Multiple --label flags use AND semantics (issue must have all specified labels)
 
 tracker show <id>
   Show full details including timeline
 
 tracker status <id> open|in-progress|done
   Change status (opens/closes an issue, or marks in-progress)
+  Note: done is terminal; transitions out of done are not allowed
 
-tracker block <id> "reason for blockage"
-  Mark as blocked with context note
+tracker stuck <id> "reason"
+  Record an internal blockage note on the timeline (you hit a wall within this issue)
 
-tracker unblock <id> "what resolved it"
-  Mark as unblocked with resolution note
+tracker unstuck <id> "what resolved it"
+  Record the resolution of an internal blockage on the timeline
+
+tracker blocked-by <id> <other-id>
+  Add a dependency: this issue is blocked until <other-id> is done
+
+tracker unblock <id> <other-id>
+  Remove a dependency relationship between two issues
 
 tracker label <id> tag [tag...]
-  Add label(s) to an issue
+  Add label(s) to an issue (labels are lowercased; duplicates ignored)
 
 tracker delete <id>
   Remove an issue entirely
@@ -103,8 +121,8 @@ tracker --help
 
 ## Why This Design
 
-- **Timeline as source of truth**: No separate state field. The last event in the timeline IS the current state. This is immutable and uploadable.
-- **Blocked/unblocked events are first-class**: Captures the stuck/unstuck narrative that matters for context. When you upload to Claude, it sees "I was blocked on X, I learned Y, here's where I am."
+- **Timeline as source of truth**: No separate state field. Status is derived from the timeline and `blockedBy` relationships. The file is append-only by design and uploadable as a snapshot.
+- **Two kinds of blockage**: `stuck`/`unstuck` are narrative timeline events (internal — you hit a wall within this issue's scope). `blocked` status is derived from `blockedBy` relationships (external — another issue is in the way). These are kept separate so the upload context is always clear: "I was stuck on X within this issue" vs. "issue Y must be done first."
 - **Flat structure**: No subissues or hierarchy. Phase 2 scope is atomic units + blocking. Hierarchy is Phase 2.5.
 - **Priority + labels**: Required by curriculum. Enables filtering and sorting.
 - **Single file**: Everything is in one JSON. Portable, uploadable, snapshotable.
@@ -124,10 +142,10 @@ tracker --help
 1. **Core**: Create, list, show, delete. Open/done status. JSON storage.
 2. **Priority**: Add priority levels. Sort by priority in list view.
 3. **Labels**: Add label support. Filter by label(s).
-4. **Blocking**: `blockedBy` field and blocking relationships. Show blocked status separately.
-5. **Timeline**: Implement timeline events (opened, in-progress, blocked, unblocked, closed). Derive current status from timeline.
+4. **Blocking**: `blockedBy` field and `blocked-by`/`unblock` commands. Derive `blocked` status from unresolved dependencies. Warn on orphaned references at load time.
+5. **Timeline**: Implement `stuck`/`unstuck` timeline events alongside `opened`, `in-progress`, `closed`. Derive current status from timeline + `blockedBy`.
 6. **Compound filters**: Status + priority + label filters work together.
-7. **Polish**: Error messages, colored output, additional edge case handling, `--helop` output.
+7. **Polish**: Error messages, colored output, additional edge case handling, `--help` output.
 
 ## Security Considerations
 
