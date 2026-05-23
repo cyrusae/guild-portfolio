@@ -1,22 +1,31 @@
 const STORAGE_KEY = 'bookmarks';
 
+// In-memory cache. Populated on first read, invalidated on every write so
+// multiple getBookmarks() calls within the same refresh cycle share one parse.
+let cache = null;
+
 /**
  * Returns the stored bookmark array, or [] on failure.
+ * Subsequent calls within the same event loop tick return the cached value
+ * without re-parsing localStorage.
  * @returns {object[]}
  */
 export function getBookmarks() {
+  if (cache !== null) return cache;
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? [];
+    cache = JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? [];
   } catch {
-    return [];
+    cache = [];
   }
+  return cache;
 }
 
 /**
- * Overwrites the stored bookmark array.
+ * Overwrites the stored bookmark array and updates the cache.
  * @param {object[]} bookmarks
  */
 export function saveBookmarks(bookmarks) {
+  cache = bookmarks;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks));
 }
 
