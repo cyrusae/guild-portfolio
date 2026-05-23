@@ -50,6 +50,8 @@ Claude updated DESIGN.md accordingly. Had it create PLAN.md with individual step
 
 #### Core features
 
+Single pass: data model, CLI skeleton, core creation/deletion of events, status command, show command, delete command. Started working on priority. Creating with label works, filtering next.
+
 #### Layer
 
 ## What I learned
