@@ -66,12 +66,18 @@ Added "blocking" between issues. Claude noticed that ignoring blocks from nonexi
 
 #### Layer 4
 
+Added stuck/unstuck narrative tools. In-progress turns to stuck and back again when updated. Rejects whitespace entries.
+
+#### Layer 5
+
+Paused to add data validation and sanitization as a basic pass (non-toy example would want it built in more comprehensively, but this is assuming minimally adversarial users).
 
 ## What I learned
 
-This was my first experience working in Rust. I should have thought about this, but it's significantly easier to get Claude to write and test a CLI tool than a GUI one because it can do all of its own testing without me needing to manually hammer out synthetic data. 
+This was my first experience working in Rust. I should have thought about this, but it's significantly easier to get Claude to write and test a CLI tool than a GUI one because it can do all of its own testing without me needing to manually hammer out synthetic data.
 
 ## Known issues
 
 - I framed it as a sibling project to `pbjson` but it hasn't been deliberately designed to work in concert with it; if I were developing it as more than a one-day assignment I'd probably be trying to make them actively cross-compatible/more explicitly modeling it on `pbjson`, but in that case it would probably also be in the "bootleg skill" Python format.
 - Individual commands aren't documented, availability of `help` is limited.
+- No automated testing; only rudimentary validation and sanitization.

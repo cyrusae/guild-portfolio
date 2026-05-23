@@ -1,6 +1,7 @@
 mod cli;
 mod data;
 mod store;
+mod validation;
 
 use chrono::Utc;
 use clap::Parser;
@@ -48,22 +49,19 @@ fn parse_priority(s: &str) -> Result<Priority, String> {
 fn run(cli: Cli) -> Result<(), String> {
     match cli.command {
         Commands::Create { title, priority, label } => {
-            let title = title.trim().to_string();
-            if title.is_empty() {
-                return Err("title must not be empty".to_string());
-            }
+            let title = validation::validate_title(&title)?;
             let priority = parse_priority(&priority)?;
             let labels: Vec<String> = {
                 let mut ls: Vec<String> = label.iter()
-                    .map(|l| l.trim().to_lowercase())
-                    .filter(|l| !l.is_empty())
-                    .collect();
+                    .map(|raw| validation::validate_label(raw))
+                    .collect::<Result<Vec<_>, _>>()?;
                 ls.sort();
                 ls.dedup();
                 ls
             };
 
             let mut tracker = store::load(TRACKER_FILE)?;
+            validation::check_issue_limit(tracker.issues.len())?;
             let next_id = tracker.issues.iter().map(|i| i.id).max().unwrap_or(0) + 1;
 
             let issue = Issue {
@@ -87,11 +85,10 @@ fn run(cli: Cli) -> Result<(), String> {
         Commands::List { status, priority, label } => {
             let tracker = store::load(TRACKER_FILE)?;
 
-            // Normalise filter inputs
+            // Normalise and validate filter labels.
             let filter_labels: Vec<String> = label.iter()
-                .map(|l| l.trim().to_lowercase())
-                .filter(|l| !l.is_empty())
-                .collect();
+                .map(|raw| validation::validate_label(raw))
+                .collect::<Result<Vec<_>, _>>()?;
 
             let (known_ids, done_ids) = known_and_done(&tracker);
 
@@ -201,10 +198,48 @@ fn run(cli: Cli) -> Result<(), String> {
             println!("Issue #{id} is now {new_status}");
         }
         Commands::Stuck { id, reason } => {
-            println!("stuck: not yet implemented (id={id}, reason={reason:?})");
+            let reason = validation::validate_note(&reason, "reason")?;
+
+            let mut tracker = store::load(TRACKER_FILE)?;
+            let (known_ids, done_ids) = known_and_done(&tracker);
+            let issue = tracker.issues.iter_mut().find(|i| i.id == id)
+                .ok_or_else(|| format!("issue #{id} not found"))?;
+
+            if matches!(issue.timeline.last().map(|e| &e.event), Some(EventKind::Closed)) {
+                return Err(format!("issue #{id} is done; done is a terminal state"));
+            }
+            if issue.status(&known_ids, &done_ids) == data::Status::Stuck {
+                return Err(format!("issue #{id} is already stuck"));
+            }
+
+            issue.timeline.push(TimelineEvent {
+                timestamp: Utc::now(),
+                event: EventKind::Stuck,
+                note: Some(reason.clone()),
+            });
+            store::save(TRACKER_FILE, &tracker)?;
+            println!("Issue #{id} marked stuck: {reason}");
         }
+
         Commands::Unstuck { id, resolution } => {
-            println!("unstuck: not yet implemented (id={id}, resolution={resolution:?})");
+            let resolution = validation::validate_note(&resolution, "resolution")?;
+
+            let mut tracker = store::load(TRACKER_FILE)?;
+            let (known_ids, done_ids) = known_and_done(&tracker);
+            let issue = tracker.issues.iter_mut().find(|i| i.id == id)
+                .ok_or_else(|| format!("issue #{id} not found"))?;
+
+            if issue.status(&known_ids, &done_ids) != data::Status::Stuck {
+                return Err(format!("issue #{id} is not currently stuck"));
+            }
+
+            issue.timeline.push(TimelineEvent {
+                timestamp: Utc::now(),
+                event: EventKind::Unstuck,
+                note: Some(resolution.clone()),
+            });
+            store::save(TRACKER_FILE, &tracker)?;
+            println!("Issue #{id} unstuck: {resolution}");
         }
         Commands::BlockedBy { id, other_id } => {
             if id == other_id {
@@ -246,11 +281,8 @@ fn run(cli: Cli) -> Result<(), String> {
                 .ok_or_else(|| format!("issue #{id} not found"))?;
 
             let mut added = Vec::new();
-            for tag in tags {
-                let tag = tag.trim().to_lowercase();
-                if tag.is_empty() {
-                    return Err("label must not be empty".to_string());
-                }
+            for raw in tags {
+                let tag = validation::validate_label(&raw)?;
                 if !issue.labels.contains(&tag) {
                     issue.labels.push(tag.clone());
                     added.push(tag);
