@@ -203,7 +203,29 @@ fn run(cli: Cli) -> Result<(), String> {
             println!("unblock: not yet implemented (id={id}, other_id={other_id})");
         }
         Commands::Label { id, tags } => {
-            println!("label: not yet implemented (id={id}, tags={tags:?})");
+            let mut tracker = store::load(TRACKER_FILE)?;
+            let issue = tracker.issues.iter_mut().find(|i| i.id == id)
+                .ok_or_else(|| format!("issue #{id} not found"))?;
+
+            let mut added = Vec::new();
+            for tag in tags {
+                let tag = tag.trim().to_lowercase();
+                if tag.is_empty() {
+                    return Err("label must not be empty".to_string());
+                }
+                if !issue.labels.contains(&tag) {
+                    issue.labels.push(tag.clone());
+                    added.push(tag);
+                }
+            }
+            issue.labels.sort();
+
+            store::save(TRACKER_FILE, &tracker)?;
+            if added.is_empty() {
+                println!("No new labels added (all already present).");
+            } else {
+                println!("Added labels to #{id}: {}", added.join(", "));
+            }
         }
         Commands::Delete { id } => {
             let mut tracker = store::load(TRACKER_FILE)?;

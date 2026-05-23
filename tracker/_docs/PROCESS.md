@@ -56,7 +56,7 @@ Single pass: data model, CLI skeleton, core creation/deletion of events, status 
 
 ## What I learned
 
-This was my first experience working in Rust. 
+This was my first experience working in Rust. I should have thought about this, but it's significantly easier to get Claude to write and test a CLI tool than a GUI one because it can do all of its own testing without me needing to manually hammer out synthetic data. 
 
 ## Known issues
 
