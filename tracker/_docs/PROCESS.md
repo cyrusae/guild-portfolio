@@ -1,0 +1,51 @@
+# Process
+
+## What I built
+
+Rust-based simple issue tracker, command-line interface, usable by humans and agents. Generates a single running `.json` file per project. Intended to be extremely lightweight proof of concept. Developed for the issue-tracking assignment in the Navigators Guild curriculum and as a thought experiment.
+
+## Build process
+
+### Initial discussion
+
+Developed in conversation with Claude Haiku.
+
+Initial prompt:
+
+> Clone this repo and read the README and the section on the issue tracker project. https://github.com/Navigators-Guild/apprentice-onboarding I’m going to work on the issue tracker CLI assignment tomorrow and I’d like to brainstorm it with you: it’s a toy example project, but I’d like help thinking of ways to make it mine/put my own spin on it so it’s still fun to do.
+
+Second round:
+
+> Maybe… the data modeling aspect of conceptualizing “issues” as something composable that can block each other and feed back into decision making? I don’t want to pretend I’m inventing something usable as opposed to reinventing chainlink or deciduous, but “what is an issue” draws my attention. There’s also the radical simplicity option, like making it a partner to pbjson: have project state live in a single json or jsonl file that’s portable enough to upload to Claude.ai as a snapshot of development being done on desktop.
+
+Further discussion pinpointed the data model and polished the "issues snapshot counterpart to [pbjson](https://github.com/cyrusae/pbjson)" concept enough to make it feel like something I could pretend was usable enough to develop. (I later revisited the chapter and realized I was reinventing crosslink again.)
+
+The pbjson comparison led to "is it ergonomic for agents":
+
+> Help me think through the interface? I’m especially interested in making sure it’s ergonomic for agents— natural language conversation with me surfaces “I want to add a help flag but I’m stuck on drafting an official-looking man page and knowing how to invoke it”, Claude logs the issue “add help flag” and the contributing info I just gave.
+
+Haiku generated the first draft of the [DESIGN.md](DESIGN.md) document based on the conversation after a couple rounds of clarifying questions about my workflow and me remembering that priority and labels were part of the assignment, and suggested the test cases in [TESTING.md](TESTING.md).
+
+I preferred Haiku for the following reasons:
+
+1. More affordable to clone entire repo for assignment context (GitHub robots.txt blocks me just linking the chapter)
+2. Smaller model is somewhat less likely to make assumptions or sweeping decisions on its own
+3. I try to stay in the habit of using smaller models generally
+
+### Development
+
+On-desktop development switched to Claude Sonnet in Claude Code. If I did further testing I would have supplemented with Gemini for cross-model testing/ease of getting a clean session immediately; for a larger project I would also have supplemented with code from other models (usually Gemini).
+
+#### Pre-flight
+
+#### Core features
+
+#### Layer
+
+## What I learned
+
+## Known issues
+
+- The difference between a blocker and another issue isn't particularly clear and they're not intrinsically linked. This raises the possibility of duplicate issues in both "individual crosslinked issue" and "anontation on issue" formats.
+- I framed it as a sibling project to `pbjson` but it hasn't been deliberately designed to work in concert with it; if I were developing it as more than a one-day assignment I'd probably be trying to make them actively cross-compatible/more explicitly modeling it on `pbjson`, but in that case it would probably also be in the "bootleg skill" Python format.
+- Individual commands aren't documented, availability of `help` is limited.
