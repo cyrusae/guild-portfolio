@@ -74,11 +74,11 @@ Paused to add data validation and sanitization as a basic pass (non-toy example 
 
 #### Layer 6
 
-Compound filters added (label + priority) without issue. Paused to check on modularity of code/size of files. Claude suggested moving parts of main.rs into data.rs and I agreed--deferred to its judgement on what divisions make sense, just wanted to make the divisions happen. main.rs worth keeping an eye on because it's large enough that any new added features would want to be broken out into their own files but deferring to its judgement that it's fine for now.
+Compound filters added (label + priority + status) without issue. Paused to check on modularity of code/size of files. Claude suggested moving parts of main.rs into data.rs and I agreed--deferred to its judgement on what divisions make sense, just wanted to make the divisions happen. main.rs worth keeping an eye on because it's large enough that any new added features would want to be broken out into their own files but deferring to its judgement that it's fine for now.
 
 #### Layer 7
 
-Polish: colored output with `owo-colors`, make blocking issues show their related titles, `--help` polish. `owo-colors` was initially not imported correctly; Claude caught this in the process of coding through it.
+Polish: colored output with `owo-colors`, make blocking issues show their related titles, `--help` polish. `owo-colors` was initially not imported correctly; Claude caught this in the process of coding through it (diagnosed based on errors).
 
 ## What I learned
 
@@ -87,6 +87,6 @@ This was my first experience working in Rust. I should have thought about this, 
 ## Known issues
 
 - I framed it as a sibling project to `pbjson` but it hasn't been deliberately designed to work in concert with it; if I were developing it as more than a one-day assignment I'd probably be trying to make them actively cross-compatible/more explicitly modeling it on `pbjson`, but in that case it would probably also be in the "bootleg skill" Python format.
-- No automated testing; only rudimentary validation and sanitization.
+- No automated testing; only rudimentary validation and sanitization. No unit tests or integration tests. TESTING.md is all alone.
 - `done` being terminal was an intentional choice but is also a limitation
 - JSON format was an intentional choice and is also a limitation; JSON's ability to validate itself for anything other than semantic correctness is limited, the file will get ugly with enough content and there's no release valve for that, etc.
