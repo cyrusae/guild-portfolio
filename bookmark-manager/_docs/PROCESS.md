@@ -134,3 +134,9 @@ Gemini identified two major performance issues in the code as written, layout th
 ### Prompting a fix
 
 > Check out `_docs/FEEDBACK.md`; I'd like to address the performance issues in #2 (layout thrashing and redundant data processing), one by one. Read that section of the document, make a plan for how to address item #2.1, execute it, and notify me.
+
+Then,
+
+> Great! Can we hit #2.2 while we're here?
+
+An actual fix would have probably focused on the security findings first and would have merited continuous testing to make sure that no functionality was broken.
