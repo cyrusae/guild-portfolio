@@ -72,9 +72,17 @@ Added stuck/unstuck narrative tools. In-progress turns to stuck and back again w
 
 Paused to add data validation and sanitization as a basic pass (non-toy example would want it built in more comprehensively, but this is assuming minimally adversarial users).
 
+#### Layer 6
+
+Compound filters added (label + priority) without issue. Paused to check on modularity of code/size of files. Claude suggested moving parts of main.rs into data.rs and I agreed--deferred to its judgement on what divisions make sense, just wanted to make the divisions happen. main.rs worth keeping an eye on because it's large enough that any new added features would want to be broken out into their own files but deferring to its judgement that it's fine for now.
+
+#### Layer 7
+
+Polish: colored output, 
+
 ## What I learned
 
-This was my first experience working in Rust. I should have thought about this, but it's significantly easier to get Claude to write and test a CLI tool than a GUI one because it can do all of its own testing without me needing to manually hammer out synthetic data.
+This was my first experience working in Rust. I should have thought about this, but it's significantly easier to get Claude to write and test a CLI tool than a GUI one because it can do all of its own testing without me needing to manually hammer out synthetic data. In general it was startlingly fast and efficient in a way that left a good taste in my mouth; I can imagine getting spoiled by this.
 
 ## Known issues
 

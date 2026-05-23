@@ -6,7 +6,7 @@ mod validation;
 use chrono::Utc;
 use clap::Parser;
 use cli::{Cli, Commands};
-use data::{EventKind, Issue, Priority, TimelineEvent};
+use data::{EventKind, Issue, TimelineEvent};
 
 const TRACKER_FILE: &str = "tracker.json";
 
@@ -19,38 +19,12 @@ fn main() {
     }
 }
 
-/// Returns (known_ids, done_ids) for status derivation.
-/// known_ids = all IDs in the tracker; done_ids = subset that are closed.
-fn known_and_done(
-    tracker: &data::TrackerFile,
-) -> (
-    std::collections::HashSet<u32>,
-    std::collections::HashSet<u32>,
-) {
-    let known_ids = tracker.issues.iter().map(|i| i.id).collect();
-    let done_ids = tracker
-        .issues
-        .iter()
-        .filter(|i| matches!(i.timeline.last().map(|e| &e.event), Some(EventKind::Closed)))
-        .map(|i| i.id)
-        .collect();
-    (known_ids, done_ids)
-}
-
-fn parse_priority(s: &str) -> Result<Priority, String> {
-    match s {
-        "low" => Ok(Priority::Low),
-        "medium" => Ok(Priority::Medium),
-        "high" => Ok(Priority::High),
-        other => Err(format!("invalid priority {other:?} — must be low, medium, or high")),
-    }
-}
 
 fn run(cli: Cli) -> Result<(), String> {
     match cli.command {
         Commands::Create { title, priority, label } => {
             let title = validation::validate_title(&title)?;
-            let priority = parse_priority(&priority)?;
+            let priority = data::Priority::parse(&priority)?;
             let labels: Vec<String> = {
                 let mut ls: Vec<String> = label.iter()
                     .map(|raw| validation::validate_label(raw))
@@ -85,20 +59,37 @@ fn run(cli: Cli) -> Result<(), String> {
         Commands::List { status, priority, label } => {
             let tracker = store::load(TRACKER_FILE)?;
 
-            // Normalise and validate filter labels.
+            // Parse and validate filters up front so we error before loading.
+            let filter_status: Option<data::Status> = status
+                .as_deref()
+                .map(data::Status::parse)
+                .transpose()?;
+            let filter_priority: Option<data::Priority> = priority
+                .as_deref()
+                .map(data::Priority::parse)
+                .transpose()?;
             let filter_labels: Vec<String> = label.iter()
                 .map(|raw| validation::validate_label(raw))
                 .collect::<Result<Vec<_>, _>>()?;
 
-            let (known_ids, done_ids) = known_and_done(&tracker);
+            let (known_ids, done_ids) = tracker.known_and_done();
 
             let mut issues: Vec<_> = tracker
                 .issues
                 .iter()
                 .filter(|i| {
                     let s = i.status(&known_ids, &done_ids);
-                    // Default: show everything not done
-                    s != data::Status::Done
+                    match &filter_status {
+                        // Default: show everything not done
+                        None => s != data::Status::Done,
+                        Some(wanted) => &s == wanted,
+                    }
+                })
+                .filter(|i| {
+                    match &filter_priority {
+                        None => true,
+                        Some(wanted) => &i.priority == wanted,
+                    }
                 })
                 .filter(|i| {
                     // AND semantics: issue must have every requested label
@@ -120,12 +111,10 @@ fn run(cli: Cli) -> Result<(), String> {
                         issue.id, s.to_string(), issue.priority, issue.title);
                 }
             }
-            // status and priority filters come in Phase 8
-            let _ = (status, priority);
         }
         Commands::Show { id } => {
             let tracker = store::load(TRACKER_FILE)?;
-            let (known_ids, done_ids) = known_and_done(&tracker);
+            let (known_ids, done_ids) = tracker.known_and_done();
 
             let issue = tracker.issues.iter().find(|i| i.id == id)
                 .ok_or_else(|| format!("issue #{id} not found"))?;
@@ -160,7 +149,7 @@ fn run(cli: Cli) -> Result<(), String> {
         }
         Commands::Status { id, new_status } => {
             let mut tracker = store::load(TRACKER_FILE)?;
-            let (known_ids, done_ids) = known_and_done(&tracker);
+            let (known_ids, done_ids) = tracker.known_and_done();
 
             let event_kind = match new_status.as_str() {
                 "open"        => EventKind::Opened,
@@ -201,7 +190,7 @@ fn run(cli: Cli) -> Result<(), String> {
             let reason = validation::validate_note(&reason, "reason")?;
 
             let mut tracker = store::load(TRACKER_FILE)?;
-            let (known_ids, done_ids) = known_and_done(&tracker);
+            let (known_ids, done_ids) = tracker.known_and_done();
             let issue = tracker.issues.iter_mut().find(|i| i.id == id)
                 .ok_or_else(|| format!("issue #{id} not found"))?;
 
@@ -225,7 +214,7 @@ fn run(cli: Cli) -> Result<(), String> {
             let resolution = validation::validate_note(&resolution, "resolution")?;
 
             let mut tracker = store::load(TRACKER_FILE)?;
-            let (known_ids, done_ids) = known_and_done(&tracker);
+            let (known_ids, done_ids) = tracker.known_and_done();
             let issue = tracker.issues.iter_mut().find(|i| i.id == id)
                 .ok_or_else(|| format!("issue #{id} not found"))?;
 

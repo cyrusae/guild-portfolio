@@ -18,6 +18,30 @@ impl TrackerFile {
             issues: Vec::new(),
         }
     }
+
+    /// Returns (known_ids, done_ids) for use in status derivation.
+    /// known_ids = every ID in the tracker.
+    /// done_ids  = the subset whose last timeline event is Closed.
+    pub fn known_and_done(
+        &self,
+    ) -> (
+        std::collections::HashSet<u32>,
+        std::collections::HashSet<u32>,
+    ) {
+        let known_ids = self.issues.iter().map(|i| i.id).collect();
+        let done_ids = self
+            .issues
+            .iter()
+            .filter(|i| {
+                matches!(
+                    i.timeline.last().map(|e| &e.event),
+                    Some(EventKind::Closed)
+                )
+            })
+            .map(|i| i.id)
+            .collect();
+        (known_ids, done_ids)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -53,6 +77,17 @@ impl Priority {
             Priority::High => 2,
             Priority::Medium => 1,
             Priority::Low => 0,
+        }
+    }
+
+    pub fn parse(s: &str) -> Result<Self, String> {
+        match s {
+            "low"    => Ok(Priority::Low),
+            "medium" => Ok(Priority::Medium),
+            "high"   => Ok(Priority::High),
+            other => Err(format!(
+                "invalid priority {other:?} — must be low, medium, or high"
+            )),
         }
     }
 }
@@ -105,6 +140,21 @@ pub enum Status {
     Stuck,
     Blocked,
     Done,
+}
+
+impl Status {
+    pub fn parse(s: &str) -> Result<Self, String> {
+        match s {
+            "open"        => Ok(Status::Open),
+            "in-progress" => Ok(Status::InProgress),
+            "stuck"       => Ok(Status::Stuck),
+            "blocked"     => Ok(Status::Blocked),
+            "done"        => Ok(Status::Done),
+            other => Err(format!(
+                "invalid status {other:?} — must be open, in-progress, stuck, blocked, or done"
+            )),
+        }
+    }
 }
 
 impl std::fmt::Display for Status {
