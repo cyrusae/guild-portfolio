@@ -1,5 +1,7 @@
 use std::path::Path;
 
+use owo_colors::{OwoColorize, Stream};
+
 use crate::data::TrackerFile;
 
 /// Load tracker.json from the given path.
@@ -33,8 +35,10 @@ pub fn load(path: &str) -> Result<TrackerFile, String> {
         for dep_id in &issue.blocked_by {
             if !known_ids.contains(dep_id) {
                 eprintln!(
-                    "warn: issue #{} references blockedBy [{}] which does not exist — relationship ignored",
-                    issue.id, dep_id
+                    "{} issue #{} references blockedBy [{}] which does not exist — relationship ignored",
+                    "warn:".if_supports_color(Stream::Stderr, |t| t.yellow()),
+                    issue.id,
+                    dep_id
                 );
             }
         }

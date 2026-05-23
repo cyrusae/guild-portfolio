@@ -78,14 +78,15 @@ Compound filters added (label + priority) without issue. Paused to check on modu
 
 #### Layer 7
 
-Polish: colored output, 
+Polish: colored output with `owo-colors`, make blocking issues show their related titles, `--help` polish. `owo-colors` was initially not imported correctly; Claude caught this in the process of coding through it.
 
 ## What I learned
 
-This was my first experience working in Rust. I should have thought about this, but it's significantly easier to get Claude to write and test a CLI tool than a GUI one because it can do all of its own testing without me needing to manually hammer out synthetic data. In general it was startlingly fast and efficient in a way that left a good taste in my mouth; I can imagine getting spoiled by this.
+This was my first experience working in Rust. I should have thought about this, but it's significantly easier to get Claude to write and test a CLI tool than a GUI one because it can do all of its own testing without me needing to manually hammer out synthetic data. In general it was startlingly fast and efficient in a way that left a good taste in my mouth; I can imagine getting spoiled by this and look forward to making Claude write more Rust.
 
 ## Known issues
 
 - I framed it as a sibling project to `pbjson` but it hasn't been deliberately designed to work in concert with it; if I were developing it as more than a one-day assignment I'd probably be trying to make them actively cross-compatible/more explicitly modeling it on `pbjson`, but in that case it would probably also be in the "bootleg skill" Python format.
-- Individual commands aren't documented, availability of `help` is limited.
 - No automated testing; only rudimentary validation and sanitization.
+- `done` being terminal was an intentional choice but is also a limitation
+- JSON format was an intentional choice and is also a limitation; JSON's ability to validate itself for anything other than semantic correctness is limited, the file will get ugly with enough content and there's no release valve for that, etc.

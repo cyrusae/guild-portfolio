@@ -7,14 +7,59 @@ use chrono::Utc;
 use clap::Parser;
 use cli::{Cli, Commands};
 use data::{EventKind, Issue, TimelineEvent};
+use owo_colors::{OwoColorize, Stream};
 
 const TRACKER_FILE: &str = "tracker.json";
+
+// ── Display helpers ───────────────────────────────────────────────────────────
+
+/// Pad to fixed width first, then colorize — ANSI codes don't affect padding.
+fn fmt_status(s: &data::Status) -> String {
+    let padded = format!("{s:<11}");
+    match s {
+        data::Status::Done       => format!("{}", padded.if_supports_color(Stream::Stdout, |t| t.green())),
+        data::Status::InProgress => format!("{}", padded.if_supports_color(Stream::Stdout, |t| t.cyan())),
+        data::Status::Stuck      => format!("{}", padded.if_supports_color(Stream::Stdout, |t| t.yellow())),
+        data::Status::Blocked    => format!("{}", padded.if_supports_color(Stream::Stdout, |t| t.bright_yellow())),
+        data::Status::Open       => padded,
+    }
+}
+
+fn fmt_priority(p: &data::Priority) -> String {
+    let s = p.to_string();
+    match p {
+        data::Priority::High   => format!("{}", s.if_supports_color(Stream::Stdout, |t| t.red())),
+        data::Priority::Medium => s,
+        data::Priority::Low    => format!("{}", s.if_supports_color(Stream::Stdout, |t| t.dimmed())),
+    }
+}
+
+fn fmt_event(e: &EventKind) -> String {
+    let s = e.to_string();
+    match e {
+        EventKind::Opened                    => s,
+        EventKind::InProgress | EventKind::Unstuck => format!("{}", s.if_supports_color(Stream::Stdout, |t| t.cyan())),
+        EventKind::Stuck                     => format!("{}", s.if_supports_color(Stream::Stdout, |t| t.yellow())),
+        EventKind::Closed                    => format!("{}", s.if_supports_color(Stream::Stdout, |t| t.green())),
+    }
+}
+
+/// Truncate a string to `max_chars` Unicode scalar values, appending … if cut.
+fn truncate(s: &str, max_chars: usize) -> String {
+    let mut chars = s.chars();
+    let head: String = chars.by_ref().take(max_chars).collect();
+    if chars.next().is_some() {
+        format!("{head}…")
+    } else {
+        head
+    }
+}
 
 fn main() {
     let cli = Cli::parse();
 
     if let Err(e) = run(cli) {
-        eprintln!("error: {e}");
+        eprintln!("{} {e}", "error:".if_supports_color(Stream::Stderr, |t| t.red()));
         std::process::exit(1);
     }
 }
@@ -107,8 +152,11 @@ fn run(cli: Cli) -> Result<(), String> {
             } else {
                 for issue in issues {
                     let s = issue.status(&known_ids, &done_ids);
-                    println!("#{:<4} [{:<11}] [{}] {}",
-                        issue.id, s.to_string(), issue.priority, issue.title);
+                    println!("#{:<4} [{}] [{}] {}",
+                        issue.id,
+                        fmt_status(&s),
+                        fmt_priority(&issue.priority),
+                        issue.title);
                 }
             }
         }
@@ -121,8 +169,8 @@ fn run(cli: Cli) -> Result<(), String> {
 
             let status = issue.status(&known_ids, &done_ids);
             println!("#{} — {}", issue.id, issue.title);
-            println!("  Status:   {status}");
-            println!("  Priority: {}", issue.priority);
+            println!("  Status:   {}", fmt_status(&status));
+            println!("  Priority: {}", fmt_priority(&issue.priority));
 
             if issue.labels.is_empty() {
                 println!("  Labels:   (none)");
@@ -133,17 +181,23 @@ fn run(cli: Cli) -> Result<(), String> {
             if issue.blocked_by.is_empty() {
                 println!("  Blocked by: (none)");
             } else {
-                let ids: Vec<String> = issue.blocked_by.iter().map(|i| format!("#{i}")).collect();
-                println!("  Blocked by: {}", ids.join(", "));
+                println!("  Blocked by:");
+                for dep_id in &issue.blocked_by {
+                    let title = tracker.issues.iter()
+                        .find(|i| i.id == *dep_id)
+                        .map(|i| format!(" — {}", truncate(&i.title, 50)))
+                        .unwrap_or_default();
+                    println!("    #{dep_id}{title}");
+                }
             }
 
             println!("  Timeline:");
             for event in &issue.timeline {
                 let ts = event.timestamp.format("%Y-%m-%d %H:%M:%S UTC");
                 if let Some(note) = &event.note {
-                    println!("    {ts}  {}  — {note}", event.event);
+                    println!("    {ts}  {}  — {note}", fmt_event(&event.event));
                 } else {
-                    println!("    {ts}  {}", event.event);
+                    println!("    {ts}  {}", fmt_event(&event.event));
                 }
             }
         }
