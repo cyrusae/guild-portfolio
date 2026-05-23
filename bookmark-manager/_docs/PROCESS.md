@@ -113,7 +113,24 @@ That being said:
 
 - Tags bar is going to be unwieldy at best with more than, like, five tags; this is an issue with the design brief as written
 - I'm not satisfied with the way the header works/scrolls, due to the tags issue
-- Can't test from VSC on my phone so mobile functionality is being taken partly on faith
+- Can't test from VSC on my phone so mobile functionality is being taken on faith
 - Font sizes aren't as varied in Safari as they're supposed to be, which I'm reasonably sure is a Safari problem
 - The design doesn't quite look like I want it to, which is a fault of the fact that I don't know how to articulate what I want; this is as close as I've been able to get and the agent performed well in accommodating it.
+- Contrast is low relative to WCAG in some places due to personal aesthetic preference and the "personal" nature of the toy, as well as not having told Claude to do otherwise.
 - It would be nice if paragraph breaks in notes on bookmarks compressed themselves elegantly instead of being a fully-proportional line break; this is also out of scope.
+
+---
+
+## Adversarial feedback
+
+Adversarial feedback was generated using a fresh Gemini instance in the same folder with a request for adversarial feedback of the code base. Feedback is located in `FEEDBACK.md`.
+
+Most points of feedback focused, understandably, on the security (almost none) and a11y (highly tailored to a single idiosyncratic user on desktop; for example, "actions hidden behind hover" was literally a request) findings. **I personally decided that the nature of the project meant that most of the adversarial review findings were out of scope**, since they were directed towards a version of the app that would see more than one day or one user worth of uptime.
+
+It is worth noting that this doesn't mean *Claude* had an "excuse" for many of the points of feedback per se; the performance and robustness sections specifically would have been within scope of the assignment as dictated to Claude for it to get "right" on the first try.
+
+Gemini identified two major performance issues in the code as written, layout thrashing and redundant text processing.
+
+### Prompting a fix
+
+> Check out `_docs/FEEDBACK.md`; I'd like to address the performance issues in #2 (layout thrashing and redundant data processing), one by one. Read that section of the document, make a plan for how to address item #2.1, execute it, and notify me.
