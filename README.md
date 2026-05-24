@@ -5,6 +5,6 @@ Navigators Guild portfolio.
 2. **Issue tracker** project: Rust CLI proof of concept
 3. **Contributions to [Guild toolkit](https://github.com/Navigators-Guild/guild-toolkit)**: `TBA`
 4. **Personal project:** *entangle* `TK`
-5. **Personal project:** *writeme* `TK`
+5. **Personal project:** *yame* `TK`
 6. **Personal project:** *csnotes* `TK`
 7. **Capstone:** *akius game* `TK`
